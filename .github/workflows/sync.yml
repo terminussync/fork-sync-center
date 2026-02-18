@@ -3,7 +3,7 @@ name: Enterprise Fork Sync Center
 on:
 # All cron times are UTC (China = UTC+8)
   schedule:
-    - cron: "0 10 * * *"   # 每6小时
+    - cron: "0 10 * * *"
   workflow_dispatch:
 
 jobs:

@@ -2,7 +2,7 @@ name: Enterprise Fork Sync Center
 
 on:
   schedule:
-    - cron: "0 2 * * *"   # 每6小时
+    - cron: "55 17 * * *"   # 每6小时
   workflow_dispatch:
 
 jobs:

@@ -1,0 +1,75 @@
+name: Enterprise Fork Sync Center
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # 每6小时
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Sync all repositories
+        env:
+          TOKEN: ${{ secrets.PAT }}
+        run: |
+
+          set +e  # 不因单仓库失败而退出
+
+          repos=(
+            "terminussync/RSSHub DIYgod/RSSHub"
+  
+          )
+
+          for repo in "${repos[@]}"; do
+            echo "=============================="
+            echo "Processing: $repo"
+            echo "=============================="
+
+            set -- $repo
+            fork=$1
+            upstream=$2
+
+            workdir=$(basename $fork)
+            rm -rf $workdir
+
+            echo "Cloning fork..."
+            git clone https://x-access-token:$TOKEN@github.com/$fork.git $workdir
+            cd $workdir || continue
+
+            echo "Detecting default branch..."
+            default_branch=$(curl -s \
+              -H "Authorization: token $TOKEN" \
+              https://api.github.com/repos/$upstream \
+              | jq -r .default_branch)
+
+            if [ "$default_branch" = "null" ]; then
+              echo "❌ Failed to detect default branch for $upstream"
+              cd ..
+              continue
+            fi
+
+            echo "Default branch: $default_branch"
+
+            git remote add upstream https://github.com/$upstream.git
+            git fetch upstream
+
+            echo "Resetting to upstream..."
+            git checkout $default_branch || git checkout -b $default_branch
+            git reset --hard upstream/$default_branch
+
+            echo "Force pushing..."
+            git push origin $default_branch --force
+
+            cd ..
+            rm -rf $workdir
+
+            echo "✅ Done: $fork"
+            echo
+          done
+
+          echo "🎉 All repositories processed"

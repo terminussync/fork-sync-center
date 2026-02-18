@@ -22,7 +22,9 @@ jobs:
 
           repos=(
             "terminussync/RSSHub DIYgod/RSSHub"
-  
+            "terminussync/SmsForwarder pppscn/SmsForwarder"
+            "terminussync/firefly-iii firefly-iii/firefly-iii"
+            "terminussync/nitter zedeus/nitter"
           )
 
           for repo in "${repos[@]}"; do
